@@ -1,0 +1,9 @@
+export { default as RoomDetails } from './RoomDetails';
+export { default as Home } from './Home';
+export { default as Login } from './Login';
+export { default as Register } from './Register';
+export { default as MyBookings } from './MyBookings';
+export { default as TermsConditions } from './TermsConditions';
+export { default as Disclaimer } from './Disclaimer';
+export { default as PrivacyPolicy } from './PrivacyPolicy';
+export { default as Sitemap } from './Sitemap';
