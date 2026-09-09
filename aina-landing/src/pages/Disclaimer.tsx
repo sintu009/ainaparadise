@@ -59,10 +59,7 @@ export default function Disclaimer() {
         <h2 className="h3 mb-3">5. Limitation of Liability</h2>
         <p className="mb-6">To the fullest extent permitted by law, Aina Paradise shall not be liable for any indirect, incidental, or consequential damages arising from your use of this website or our services.</p>
 
-        <h2 className="h3 mb-3">6. Medical &amp; Health Advice</h2>
-        <p className="mb-6">Any wellness, spa, or health-related content on the Aina Paradise website is for informational purposes only and does not constitute professional medical advice. Consult a qualified health professional before undertaking any wellness program.</p>
-
-        <h2 className="h3 mb-3">7. Contact</h2>
+        <h2 className="h3 mb-3">6. Contact</h2>
         <p>If you have questions about this disclaimer, please contact Aina Paradise at <a href="mailto:info@ainaparadise.com" className="text-accent hover:underline">info@ainaparadise.com</a>.</p>
       </div>
     </section>

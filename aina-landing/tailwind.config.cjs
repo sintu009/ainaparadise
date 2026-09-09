@@ -4,7 +4,7 @@ module.exports = {
     fontFamily: {
       primary: 'Gilda Display',
       secondary: 'Barlow',
-      tertiary: 'Barlow Condensed',
+      tertiary: 'Montserrat',
     },
     container: {
       padding: {

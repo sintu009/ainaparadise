@@ -18,7 +18,7 @@ export default function Rooms() {
       )}
       <div className="container mx-auto max-w-7xl px-4 lg:px-0">
         <div className="text-center">
-          <p className="font-tertiary uppercase text-[15px] tracking-[6px]">Hotel &amp; Spa Aina Paradise</p>
+          <p className="font-tertiary uppercase text-[15px] tracking-[6px]">Aina Paradise Hotel</p>
           <h2 className="font-primary text-[45px] mb-6">Rooms &amp; Suites</h2>
         </div>
         <div className="grid grid-cols-1 max-w-sm mx-auto gap-[30px] lg:grid-cols-3 lg:max-w-none lg:mx-0">

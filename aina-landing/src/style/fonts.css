@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
 /* Self-hosted fonts (files in public/fonts). Run: npm run fonts (scripts/download-fonts.cjs). Tailwind uses these via tailwind.config.cjs fontFamily. */
 
 @font-face {
@@ -32,26 +34,3 @@
   src: url(/fonts/barlow-600.woff2) format('woff2');
 }
 
-@font-face {
-  font-family: 'Barlow Condensed';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url(/fonts/barlow-condensed-400.woff2) format('woff2');
-}
-
-@font-face {
-  font-family: 'Barlow Condensed';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url(/fonts/barlow-condensed-600.woff2) format('woff2');
-}
-
-@font-face {
-  font-family: 'Barlow Condensed';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url(/fonts/barlow-condensed-700.woff2) format('woff2');
-}

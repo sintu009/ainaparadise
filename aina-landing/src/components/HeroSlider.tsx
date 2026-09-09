@@ -4,11 +4,9 @@ import { EffectFade, Autoplay } from 'swiper/modules';
 import 'swiper/css/effect-fade';
 import 'swiper/css';
 
-/**
- * Hero carousel using Swiper: fade effect and autoplay. Data from sliderData (id, title, bg image, btnNext).
- * Each slide: background image full-cover, dark overlay (bg-black/70), centered title + CTA button.
- */
 export default function HeroSlider() {
+  const scrollToRooms = () =>
+    document.getElementById('rooms')?.scrollIntoView({ behavior: 'smooth' });
   return (
     <Swiper
       modules={[EffectFade, Autoplay]}
@@ -23,11 +21,11 @@ export default function HeroSlider() {
       {sliderData.map(({ id, title, bg, btnNext }) => (
         <SwiperSlide className="h-full relative flex justify-center items-center" key={id}>
           <div className="z-20 text-white text-center">
-            <div className="uppercase font-tertiary tracking-[6px] mb-5">Just Enjoy & Relax</div>
+            <div className="uppercase font-tertiary tracking-[6px] mb-5">Welcome to Aina Paradise</div>
             <h1 className="font-primary text-[32px] uppercase tracking-[2px] max-w-[920px] lg:text-[68px] leading-tight mb-6">
               {title}
             </h1>
-            <button type="button" className="btn btn-lg btn-primary mx-auto">
+            <button type="button" onClick={scrollToRooms} className="btn btn-lg btn-primary mx-auto">
               {btnNext}
             </button>
           </div>

@@ -19,17 +19,19 @@ import Room8ImgLg from './img/rooms/8-lg.png';
 import Slider1 from './img/heroSlider/1.jpg';
 import Slider2 from './img/heroSlider/2.jpg';
 import Slider3 from './img/heroSlider/3.jpg';
+import Slide1 from './img/slide1.png';
 
-import LogoDarkSvg from './img/logo-dark.svg?react';
-import LogoWhiteSvg from './img/logo-white.svg?react';
+import LogoDarkPng from './img/aina_paradiseblack.png';
+import LogoWhitePng from './img/aina_paradisewhite.png';
 
-export const LogoDark = LogoDarkSvg;
-export const LogoWhite = LogoWhiteSvg;
+export const LogoDark = LogoDarkPng;
+export const LogoWhite = LogoWhitePng;
 
 const images = {
   Slider1,
   Slider2,
   Slider3,
+  Slide1,
   Room1Img,
   Room2Img,
   Room3Img,
