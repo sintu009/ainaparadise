@@ -31,6 +31,7 @@ app.post('/api/upload', auth, adminOnly, upload.single('image'), (req, res) => {
 });
 
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/locations', require('./routes/locations'));
 app.use('/api/rooms', require('./routes/rooms'));
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/users', require('./routes/users'));

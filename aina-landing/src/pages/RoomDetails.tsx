@@ -3,9 +3,8 @@ import { AdultsDropdown, CheckIn, CheckOut, KidsDropdown, ScrollToTop } from '..
 import { useRoomContext } from '../context/RoomContext';
 import { hotelRules } from '../data';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaCheck, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa';
+import { FaCheck, FaChevronLeft, FaChevronRight, FaTimes, FaMapMarkerAlt } from 'react-icons/fa';
 import type { Facility } from '../types';
-import { bookingsAPI } from '../api';
 import toast, { Toaster } from 'react-hot-toast';
 
 export default function RoomDetails() {
@@ -18,7 +17,6 @@ export default function RoomDetails() {
   const [guestPhone, setGuestPhone] = useState('');
   const [checkIn, setCheckIn] = useState<Date | null>(null);
   const [checkOut, setCheckOut] = useState<Date | null>(null);
-  const [booking, setBooking] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
   const [lightbox, setLightbox] = useState<number | null>(null);
 
@@ -32,7 +30,15 @@ export default function RoomDetails() {
   }
 
   const { name, description, facilities, price, images = [] } = room;
+  const locationName = (room as any).location_name;
+  const locationCity = (room as any).location_city;
+  const locationState = (room as any).location_state;
   const gallery: string[] = images.length ? images : [room.imageLg || room.image].filter(Boolean);
+
+  const numAdults = parseInt(adults[0]) || 1;
+  const numKids = parseInt(kids[0]) || 0;
+  const nights = checkIn && checkOut ? Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+  const totalPrice = nights > 0 ? nights * price : price;
 
   const prev = () => setActiveImg(i => (i - 1 + gallery.length) % gallery.length);
   const next = () => setActiveImg(i => (i + 1) % gallery.length);
@@ -43,19 +49,24 @@ export default function RoomDetails() {
     if (!localStorage.getItem('token')) { navigate('/login'); return; }
     if (!checkIn || !checkOut) { toast.error('Please select check-in and check-out dates'); return; }
     if (!guestName || !guestEmail) { toast.error('Please fill in your name and email'); return; }
-    setBooking(true);
-    try {
-      const fmt = (d: Date) => d.toISOString().split('T')[0];
-      await bookingsAPI.create({
-        room_id: room.id, check_in: fmt(checkIn), check_out: fmt(checkOut),
-        adults: parseInt(adults[0]), kids: parseInt(kids[0]),
-        guest_name: guestName, guest_email: guestEmail, guest_phone: guestPhone,
-      });
-      toast.success('Booking confirmed!');
-      setTimeout(() => navigate('/my-bookings'), 1500);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Booking failed');
-    } finally { setBooking(false); }
+    const fmt = (d: Date) => d.toISOString().split('T')[0];
+    navigate('/payment', {
+      state: {
+        room_id: room.id,
+        room_name: name,
+        location: locationName ? `${locationName}, ${locationCity}` : null,
+        check_in: fmt(checkIn),
+        check_out: fmt(checkOut),
+        nights,
+        adults: numAdults,
+        kids: numKids,
+        price_per_night: price,
+        total_price: totalPrice,
+        guest_name: guestName,
+        guest_email: guestEmail,
+        guest_phone: guestPhone,
+      }
+    });
   };
 
   return (
@@ -73,6 +84,12 @@ export default function RoomDetails() {
           {/* Left: info + gallery */}
           <div className="w-full h-full text-justify">
             <h2 className="h2">{name}</h2>
+            {locationName && (
+              <div className="flex items-center gap-1.5 text-accent font-tertiary text-sm mb-4">
+                <FaMapMarkerAlt />
+                <span>{locationName} — {locationCity}, {locationState}</span>
+              </div>
+            )}
             <p className="mb-8">{description}</p>
 
             {/* Main image with arrows */}
@@ -146,9 +163,25 @@ export default function RoomDetails() {
                 <input type="tel" placeholder="Phone (optional)" value={guestPhone} onChange={e => setGuestPhone(e.target.value)}
                   className="border border-primary/20 px-3 py-2 text-sm outline-none focus:border-accent w-full" />
               </div>
-              <button type="button" onClick={handleBook} disabled={booking}
-                className="btn btn-lg btn-primary w-full disabled:opacity-60">
-                {booking ? 'Booking...' : `book now for ₹${price}`}
+              {nights > 0 && (
+                <div className="bg-white/60 rounded p-3 text-sm font-tertiary space-y-1 mb-2">
+                  <div className="flex justify-between">
+                    <span>₹{price.toLocaleString()} × {nights} night{nights > 1 ? 's' : ''}</span>
+                    <span>₹{(price * nights).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Guests</span>
+                    <span>{numAdults} adult{numAdults > 1 ? 's' : ''}{numKids > 0 ? `, ${numKids} kid${numKids > 1 ? 's' : ''}` : ''}</span>
+                  </div>
+                  <div className="flex justify-between font-semibold border-t border-primary/20 pt-1">
+                    <span>Total</span>
+                    <span>₹{totalPrice.toLocaleString()}</span>
+                  </div>
+                </div>
+              )}
+              <button type="button" onClick={handleBook}
+                className="btn btn-lg btn-primary w-full">
+                {nights > 0 ? `Proceed to Pay — ₹${totalPrice.toLocaleString('en-IN')}` : `Book Now — ₹${price.toLocaleString('en-IN')}/night`}
               </button>
             </div>
             <div>

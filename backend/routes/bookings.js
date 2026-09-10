@@ -54,9 +54,12 @@ router.get('/my', auth, async (req, res) => {
 router.get('/', auth, adminOnly, async (req, res) => {
   try {
     const { rows } = await pool.query(
-      `SELECT b.*, r.name as room_name, u.name as user_name, u.email as user_email
+      `SELECT b.*, r.name as room_name, r.location_id,
+              l.name as location_name, l.city as location_city,
+              u.name as user_name, u.email as user_email
        FROM bookings b
        LEFT JOIN rooms r ON b.room_id=r.id
+       LEFT JOIN locations l ON r.location_id=l.id
        LEFT JOIN users u ON b.user_id=u.id
        ORDER BY b.created_at DESC`
     );

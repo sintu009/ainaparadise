@@ -7,3 +7,4 @@ export { default as TermsConditions } from './TermsConditions';
 export { default as Disclaimer } from './Disclaimer';
 export { default as PrivacyPolicy } from './PrivacyPolicy';
 export { default as Sitemap } from './Sitemap';
+export { default as Payment } from './Payment';

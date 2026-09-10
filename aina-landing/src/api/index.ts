@@ -15,8 +15,12 @@ export const authAPI = {
 };
 
 export const roomsAPI = {
-  getAll: () => api.get('/rooms'),
+  getAll: (location_id?: number) => api.get('/rooms', { params: location_id ? { location_id } : {} }),
   getOne: (id: number) => api.get(`/rooms/${id}`),
+};
+
+export const locationsAPI = {
+  getAll: () => api.get('/locations'),
 };
 
 export const bookingsAPI = {

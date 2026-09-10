@@ -4,10 +4,11 @@ import { SpinnerDotted } from 'spinners-react';
 import Room from './Room';
 
 export default function Rooms() {
-  const { rooms, loading } = useRoomContext();
+  const { rooms, loading, locations, selectedLocation, setSelectedLocation } = useRoomContext();
   const [showAll, setShowAll] = useState(false);
 
   const visible = showAll ? rooms : rooms.slice(0, 6);
+  const selectedLoc = locations.find(l => l.id === selectedLocation);
 
   return (
     <section id="rooms" className="py-24">
@@ -19,8 +20,21 @@ export default function Rooms() {
       <div className="container mx-auto max-w-7xl px-4 lg:px-0">
         <div className="text-center">
           <p className="font-tertiary uppercase text-[15px] tracking-[6px]">Aina Paradise Hotel</p>
-          <h2 className="font-primary text-[45px] mb-6">Rooms &amp; Suites</h2>
+          <h2 className="font-primary text-[45px] mb-2">Rooms &amp; Suites</h2>
+          {selectedLoc && (
+            <p className="font-tertiary text-accent text-sm tracking-widest uppercase mb-6">
+              {selectedLoc.name} — {selectedLoc.city}, {selectedLoc.state}
+            </p>
+          )}
         </div>
+        {!loading && rooms.length === 0 && (
+          <div className="text-center py-16">
+            <p className="font-tertiary text-gray-500 text-lg mb-4">No rooms available for this location.</p>
+            <button onClick={() => setSelectedLocation(null)} className="btn btn-secondary btn-sm px-8">
+              View All Locations
+            </button>
+          </div>
+        )}
         <div className="grid grid-cols-1 max-w-sm mx-auto gap-[30px] lg:grid-cols-3 lg:max-w-none lg:mx-0">
           {visible.map((room) => (
             <Room key={room.id} room={room} />

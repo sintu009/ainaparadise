@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../api';
 import toast from 'react-hot-toast';
 import { Trash2, Search } from 'lucide-react';
+import { confirmToast } from '../lib/confirmToast';
 
 interface User { id: number; name: string; email: string; role: string; created_at: string; }
 
@@ -16,15 +17,16 @@ export default function Users() {
   };
   useEffect(() => { load(); }, []);
 
-  const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`Delete user "${name}"? This cannot be undone.`)) return;
-    try {
-      await api.delete(`/users/${id}`);
-      toast.success('User deleted');
-      setUsers(prev => prev.filter(u => u.id !== id));
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Error deleting user');
-    }
+  const handleDelete = (id: number, name: string) => {
+    confirmToast(`Delete user "${name}"? This cannot be undone.`, async () => {
+      try {
+        await api.delete(`/users/${id}`);
+        toast.success('User deleted');
+        setUsers(prev => prev.filter(u => u.id !== id));
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || 'Error deleting user');
+      }
+    });
   };
 
   const filtered = users.filter(u =>
@@ -36,7 +38,7 @@ export default function Users() {
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Users</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Users</h1>
           <p className="text-sm text-gray-500 mt-0.5">{users.length} registered users</p>
         </div>
         <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm w-64">
@@ -67,7 +69,7 @@ export default function Users() {
                   <td className="px-5 py-3.5 text-gray-400 text-xs">{i + 1}</td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold shrink-0">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: '#faefd9', color: '#b86e1f' }}>
                         {u.name.charAt(0).toUpperCase()}
                       </div>
                       <span className="font-medium text-gray-800">{u.name}</span>

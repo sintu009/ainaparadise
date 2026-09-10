@@ -1,4 +1,5 @@
 import { BsPeople } from 'react-icons/bs';
+import { FaMapMarkerAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import type { Room as RoomType } from '../types';
 
@@ -8,6 +9,8 @@ interface RoomProps {
 
 export default function Room({ room }: RoomProps) {
   const { id, name, image, maxPerson, description, price } = room;
+  const locationName = (room as any).location_name;
+  const locationCity = (room as any).location_city;
 
   return (
     <div className="group bg-white overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col">
@@ -24,6 +27,13 @@ export default function Room({ room }: RoomProps) {
         <div className="absolute top-4 right-4 bg-accent text-white font-tertiary text-sm font-semibold px-3 py-1">
           From ₹{price.toLocaleString()}
         </div>
+        {/* Location badge */}
+        {locationName && (
+          <div className="absolute bottom-4 left-4 flex items-center gap-1 bg-black/60 text-white font-tertiary text-xs px-2 py-1">
+            <FaMapMarkerAlt className="text-accent" />
+            {locationName}, {locationCity}
+          </div>
+        )}
       </div>
 
       {/* Content */}

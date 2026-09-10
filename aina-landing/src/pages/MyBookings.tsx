@@ -5,7 +5,7 @@ import { bookingsAPI } from '../api';
 import toast, { Toaster } from 'react-hot-toast';
 
 interface Booking {
-  id: number; room_name: string; image_url: string;
+  id: number; room_id: number; room_name: string; image_url: string;
   check_in: string; check_out: string; adults: number;
   kids: number; total_price: string; status: string; special_requests: string;
 }
@@ -99,7 +99,7 @@ export default function MyBookings() {
                     {/* Details */}
                     <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                       <span>👥 {b.adults} Adult{b.adults > 1 ? 's' : ''}{b.kids > 0 ? `, ${b.kids} Kid${b.kids > 1 ? 's' : ''}` : ''}</span>
-                      <span className="font-semibold text-accent">Total: ${parseFloat(b.total_price).toLocaleString()}</span>
+                      <span className="font-semibold text-accent">Total: ₹{parseFloat(b.total_price).toLocaleString('en-IN')}</span>
                       <span className="text-gray-400 text-xs">Booking #{b.id}</span>
                     </div>
 
@@ -116,7 +116,7 @@ export default function MyBookings() {
                         Cancel
                       </button>
                     )}
-                    <Link to={`/room/${b.id}`}
+                    <Link to={`/room/${b.room_id}`}
                       className="text-sm text-accent border border-accent/30 px-4 py-2 rounded-lg hover:bg-accent/5 transition-colors text-center">
                       View Room
                     </Link>

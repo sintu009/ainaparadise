@@ -2,16 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import api from '../api';
 import toast from 'react-hot-toast';
 import { Pencil, Trash2, Plus, X, Upload, ImagePlus } from 'lucide-react';
+import { confirmToast } from '../lib/confirmToast';
 
 interface Room {
   id: number; name: string; description: string; size: number;
   max_person: number; price: number; image_url: string; image_lg_url: string;
-  images: string[]; facilities: string[]; is_available: boolean;
+  images: string[]; facilities: string[]; is_available: boolean; location_id: number | null;
 }
+
+interface Location { id: number; name: string; city: string; state: string; }
 
 const empty: Omit<Room, 'id'> = {
   name: '', description: '', size: 0, max_person: 1, price: 0,
-  image_url: '', image_lg_url: '', images: [], facilities: [], is_available: true,
+  image_url: '', image_lg_url: '', images: [], facilities: [], is_available: true, location_id: null,
 };
 
 /* ── Single image uploader (thumbnail / large) ── */
@@ -36,7 +39,7 @@ function SingleUploader({ label, value, onChange }: { label: string; value: stri
       <div
         onClick={() => !busy && ref.current?.click()}
         className={`mt-1 border-2 border-dashed rounded-lg cursor-pointer transition-colors overflow-hidden
-          ${busy ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 hover:border-indigo-400'}`}
+          ${busy ? 'border-amber-300 bg-amber-50' : 'border-gray-200 hover:border-amber-400'}`}
       >
         {value ? (
           <div className="relative group">
@@ -47,7 +50,7 @@ function SingleUploader({ label, value, onChange }: { label: string; value: stri
           </div>
         ) : (
           <div className="h-24 flex flex-col items-center justify-center gap-1 text-gray-400">
-            {busy ? <span className="text-indigo-500 text-sm animate-pulse">Uploading…</span> : (
+            {busy ? <span className="text-amber-600 text-sm animate-pulse">Uploading…</span> : (
               <><Upload size={20} /><span className="text-xs">Click to upload</span></>
             )}
           </div>
@@ -96,7 +99,7 @@ function MultiUploader({ images, onChange }: { images: string[]; onChange: (imgs
               <X size={12} />
             </button>
             {i === 0 && (
-              <span className="absolute bottom-1 left-1 bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 rounded">
+              <span className="absolute bottom-1 left-1 text-white text-[10px] px-1.5 py-0.5 rounded" style={{ background: '#d4882a' }}>
                 Main
               </span>
             )}
@@ -107,10 +110,10 @@ function MultiUploader({ images, onChange }: { images: string[]; onChange: (imgs
         <div
           onClick={() => !busy && ref.current?.click()}
           className={`h-24 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors
-            ${busy ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 hover:border-indigo-400 text-gray-400 hover:text-indigo-500'}`}
+            ${busy ? 'border-amber-300 bg-amber-50' : 'border-gray-200 hover:border-amber-400 text-gray-400 hover:text-amber-600'}`}
         >
           {busy
-            ? <span className="text-indigo-500 text-xs animate-pulse">Uploading…</span>
+            ? <span className="text-amber-600 text-xs animate-pulse">Uploading…</span>
             : <><ImagePlus size={20} /><span className="text-[11px] mt-1">Add Images</span></>
           }
         </div>
@@ -124,6 +127,7 @@ function MultiUploader({ images, onChange }: { images: string[]; onChange: (imgs
 /* ── Main component ── */
 export default function Rooms() {
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<Room | null>(null);
@@ -133,7 +137,13 @@ export default function Rooms() {
 
   const load = () => {
     setLoading(true);
-    api.get('/rooms?all=true').then(({ data }) => setRooms(data)).finally(() => setLoading(false));
+    Promise.all([
+      api.get('/rooms?all=true'),
+      api.get('/locations?all=true'),
+    ]).then(([roomsRes, locsRes]) => {
+      setRooms(roomsRes.data);
+      setLocations(locsRes.data);
+    }).finally(() => setLoading(false));
   };
   useEffect(() => { load(); }, []);
 
@@ -144,6 +154,7 @@ export default function Rooms() {
       name: r.name, description: r.description, size: r.size, max_person: r.max_person,
       price: r.price, image_url: r.image_url || '', image_lg_url: r.image_lg_url || '',
       images: r.images || [], facilities: r.facilities || [], is_available: r.is_available,
+      location_id: r.location_id || null,
     });
     setFacilitiesStr((r.facilities || []).join(', '));
     setModal(true);
@@ -168,10 +179,11 @@ export default function Rooms() {
     } finally { setSaving(false); }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Delete this room?')) return;
-    try { await api.delete(`/rooms/${id}`); toast.success('Room deleted'); load(); }
-    catch (err: any) { toast.error(err.response?.data?.message || 'Error'); }
+  const handleDelete = (id: number) => {
+    confirmToast('Delete this room? This cannot be undone.', async () => {
+      try { await api.delete(`/rooms/${id}`); toast.success('Room deleted'); load(); }
+      catch (err: any) { toast.error(err.response?.data?.message || 'Error deleting room'); }
+    });
   };
 
   const thumb = (r: Room) => r.image_url || r.images?.[0] || '';
@@ -180,10 +192,12 @@ export default function Rooms() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Rooms</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Rooms</h1>
           <p className="text-sm text-gray-500 mt-0.5">{rooms.length} total rooms</p>
         </div>
-        <button onClick={openCreate} className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm">
+        <button onClick={openCreate} className="flex items-center gap-2 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm" style={{ background: '#d4882a' }}
+          onMouseEnter={e => (e.currentTarget.style.background = '#b86e1f')}
+          onMouseLeave={e => (e.currentTarget.style.background = '#d4882a')}>
           <Plus size={16} /> Add Room
         </button>
       </div>
@@ -198,7 +212,7 @@ export default function Rooms() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-xs text-gray-400 uppercase tracking-wide">
                 <tr>
-                  {['Room', 'Size (m²)', 'Max Guests', 'Price / Night', 'Facilities', 'Status', 'Actions'].map(h => (
+                  {['Room', 'Location', 'Size (m²)', 'Max Guests', 'Price / Night', 'Facilities', 'Status', 'Actions'].map(h => (
                     <th key={h} className="px-5 py-3 text-left font-medium">{h}</th>
                   ))}
                 </tr>
@@ -216,10 +230,15 @@ export default function Rooms() {
                           <p className="font-semibold text-gray-800">{r.name}</p>
                           <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{r.description}</p>
                           {(r.images?.length > 0) && (
-                            <p className="text-[11px] text-indigo-400 mt-0.5">{r.images.length} image{r.images.length > 1 ? 's' : ''}</p>
+                            <p className="text-[11px] text-amber-500 mt-0.5">{r.images.length} image{r.images.length > 1 ? 's' : ''}</p>
                           )}
                         </div>
                       </div>
+                    </td>
+                    <td className="px-5 py-4 text-gray-600">
+                      {(r as any).location_name
+                        ? <span className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">{(r as any).location_name}, {(r as any).location_city}</span>
+                        : <span className="text-gray-300">—</span>}
                     </td>
                     <td className="px-5 py-4 text-gray-600">{r.size ?? '—'}</td>
                     <td className="px-5 py-4 text-gray-600">{r.max_person}</td>
@@ -239,7 +258,7 @@ export default function Rooms() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <button onClick={() => openEdit(r)} className="text-indigo-500 hover:text-indigo-700"><Pencil size={15} /></button>
+                        <button onClick={() => openEdit(r)} className="text-amber-500 hover:text-amber-700"><Pencil size={15} /></button>
                         <button onClick={() => handleDelete(r.id)} className="text-red-400 hover:text-red-600"><Trash2 size={15} /></button>
                       </div>
                     </td>
@@ -261,13 +280,26 @@ export default function Rooms() {
             </div>
             <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
               <div>
+                <label className="text-xs font-medium text-gray-500 uppercase">Location</label>
+                <select
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1 focus:outline-none focus:border-amber-400"
+                  value={form.location_id ?? ''}
+                  onChange={e => setForm({ ...form, location_id: e.target.value ? +e.target.value : null })}
+                >
+                  <option value="">— No location assigned —</option>
+                  {locations.map(l => (
+                    <option key={l.id} value={l.id}>{l.name} — {l.city}, {l.state}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="text-xs font-medium text-gray-500 uppercase">Room Name *</label>
-                <input required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1 focus:outline-none focus:border-indigo-500"
+                <input required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1 focus:outline-none focus:border-amber-400"
                   value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
               </div>
               <div>
                 <label className="text-xs font-medium text-gray-500 uppercase">Description</label>
-                <textarea rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1 focus:outline-none focus:border-indigo-500 resize-none"
+                <textarea rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1 focus:outline-none focus:border-amber-400 resize-none"
                   value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
               </div>
               <div className="grid grid-cols-3 gap-3">
@@ -276,7 +308,7 @@ export default function Rooms() {
                     <label className="text-xs font-medium text-gray-500 uppercase">
                       {f === 'max_person' ? 'Max Guests' : f === 'size' ? 'Size m²' : 'Price ₹'}
                     </label>
-                    <input type="number" min="0" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1 focus:outline-none focus:border-indigo-500"
+                    <input type="number" min="0" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1 focus:outline-none focus:border-amber-400"
                       value={form[f]} onChange={e => setForm({ ...form, [f]: +e.target.value })} />
                   </div>
                 ))}
@@ -296,15 +328,15 @@ export default function Rooms() {
 
               <div>
                 <label className="text-xs font-medium text-gray-500 uppercase">Facilities (comma separated)</label>
-                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1 focus:outline-none focus:border-indigo-500"
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1 focus:outline-none focus:border-amber-400"
                   value={facilitiesStr} onChange={e => setFacilitiesStr(e.target.value)} placeholder="Wifi, Coffee, Bath, Pool…" />
               </div>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.is_available} onChange={e => setForm({ ...form, is_available: e.target.checked })} className="w-4 h-4 accent-indigo-600" />
+                <input type="checkbox" checked={form.is_available} onChange={e => setForm({ ...form, is_available: e.target.checked })} className="w-4 h-4" style={{ accentColor: '#d4882a' }} />
                 <span className="text-sm text-gray-700">Available for booking</span>
               </label>
               <button type="submit" disabled={saving}
-                className="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50">
+                className="w-full text-white py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50" style={{ background: '#d4882a' }}>
                 {saving ? 'Saving…' : editing ? 'Update Room' : 'Create Room'}
               </button>
             </form>

@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Footer, Header, PageNotFound } from './components';
-import { Home, RoomDetails, Login, Register, MyBookings, TermsConditions, Disclaimer, PrivacyPolicy, Sitemap } from './pages';
+import { Home, RoomDetails, Login, Register, MyBookings, TermsConditions, Disclaimer, PrivacyPolicy, Sitemap, Payment } from './pages';
 
 function App() {
   return (
@@ -13,6 +13,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/my-bookings" element={<MyBookings />} />
+          <Route path="/payment" element={<Payment />} />
           <Route path="/terms-conditions" element={<TermsConditions />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
